@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Sports Table - Dynamic Full Theme</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&display=swap');
+
+        /* CSS Variables - Default values */
+        :root {
+            --header-bg: #fca311;
+            --header-text: #111;
+            --list-bg-start: #1f1d18;
+            --list-bg-end: #2a2822;
+            --list-text: #ffffff;
+            --list-border: #444444;
+            --rank-color: #fca311;
+            --point-color: #fca311;
+            --logo-border: #fca311;
+        }
+
+        body {
+            background-color: #00ff00; /* OBS Greenscreen */
+            font-family: 'Teko', sans-serif;
+            margin: 0;
+            padding: 40px;
+            color: white;
+            overflow: hidden;
+        }
+
+        .scoreboard-container {
+            width: 1000px;
+            margin: 0 auto;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 0.8fr 4fr 1fr 1fr 1fr;
+            align-items: center;
+            text-align: center;
+            font-size: 35px;
+            text-transform: uppercase;
+            letter-spacing: 0px;
+        }
+
+        .header {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            font-weight: 700;
+            padding: 5px 20px;
+            margin-bottom: 5px;
+            transition: 0.5s;
+        }
+
+        .team-row {
+            /* Firebase থেকে আসা গ্রেডিয়েন্ট কালার */
+            background: linear-gradient(90deg, var(--list-bg-start) 0%, var(--list-bg-end) 50%, var(--list-bg-start) 100%);
+            padding: 4px 20px;
+            border: 2px solid var(--list-border);
+            margin-bottom: 5px;
+            color: var(--list-text);
+            transition: 0.5s;
+        }
+
+        .team-info {
+            display: flex;
+            align-items: center;
+            text-align: left;
+            padding-left: 50px; 
+        }
+
+        .team-logo {
+            width: 50px;
+            height: 50px;
+            aspect-ratio: 1/1;
+            border-radius: 1px;
+            object-fit: cover;
+            margin-right: 12px;
+            border: 1.5px solid var(--logo-border);
+            transition: 0.5s;
+        }
+
+        .rank {
+            color: var(--rank-color);
+            font-weight: 700;
+            transition: 0.5s;
+        }
+
+        .point {
+            color: var(--point-color);
+            font-weight: 700;
+            transition: 0.5s;
+        }
+
+        .header-name {
+            text-align: left;
+            padding-left: 50px;
+        }
+
+        #team-list {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+
+<div class="scoreboard-container">
+    <div class="row header">
+        <div>RANK</div>
+        <div class="header-name">TEAMS</div> 
+        <div>BOOYAH</div>
+        <div>KILL</div>
+        <div>POINT</div>
+    </div>
+    
+    <div id="team-list"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyC2mEZBoiuUuU3e0ymHyRiwHt_xfyBvuAs",
+        authDomain: "wisc-e94c6.firebaseapp.com",
+        databaseURL: "https://wisc-e94c6-default-rtdb.firebaseio.com",
+        projectId: "wisc-e94c6",
+        storageBucket: "wisc-e94c6.appspot.com",
+        messagingSenderId: "234617788899",
+        appId: "1:234617788899:web:f62321e71feddb5f38e8d6"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const defaultLogo = "https://images.seeklogo.com/logo-png/35/1/free-fire-logo-png_seeklogo-354358.png";
+
+    // --- Firebase Theme Settings Listener ---
+    db.ref('theme_settings').on('value', (snapshot) => {
+        const c = snapshot.val();
+        if(c) {
+            const root = document.documentElement.style;
+            if(c.header_bg) root.setProperty('--header-bg', c.header_bg);
+            if(c.header_text) root.setProperty('--header-text', c.header_text);
+            if(c.list_bg_start) root.setProperty('--list-bg-start', c.list_bg_start);
+            if(c.list_bg_end) root.setProperty('--list-bg-end', c.list_bg_end);
+            if(c.list_text) root.setProperty('--list-text', c.list_text);
+            if(c.list_border) root.setProperty('--list-border', c.list_border);
+            if(c.rank_color) root.setProperty('--rank-color', c.rank_color);
+            if(c.point_color) root.setProperty('--point-color', c.point_color);
+            if(c.logo_border) root.setProperty('--logo-border', c.logo_border);
+        }
+    });
+
+    const teamListDiv = document.getElementById('team-list');
+
+    db.ref('teams').on('value', (snapshot) => {
+        let teams = [];
+        snapshot.forEach((childSnapshot) => {
+            let data = childSnapshot.val();
+            teams.push({
+                team_name: data.team_name || "Unknown",
+                booyah: data.booyah || 0,
+                kill: data.kill || 0,
+                point: data.point || 0,
+                url: data.url || defaultLogo
+            });
+        });
+
+        teams.sort((a, b) => b.point - a.point);
+        teamListDiv.innerHTML = '';
+        
+        teams.forEach((team, index) => {
+            const row = document.createElement('div');
+            row.className = 'row team-row';
+            row.innerHTML = `
+                <div class="rank">#${index + 1}</div>
+                <div class="team-info">
+                    <img class="team-logo" src="${team.url}" 
+                         onerror="this.onerror=null;this.src='${defaultLogo}';" alt="logo">
+                    <span class="team-name-text">${team.team_name}</span>
+                </div>
+                <div>${team.booyah}</div>
+                <div>${team.kill}</div>
+                <div class="point">${team.point}</div>
+            `;
+            teamListDiv.appendChild(row);
+        });
+    });
+</script>
+
+</body>
+</html>
