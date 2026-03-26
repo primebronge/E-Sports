@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Sports Table - Dynamic Full Theme</title>
+    <title>E-Sports Table - Transparent Theme</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&display=swap');
 
-        /* CSS Variables - Default values */
         :root {
             --header-bg: #fca311;
             --header-text: #111;
@@ -21,7 +20,8 @@
         }
 
         body {
-            background-color: #00ff00; /* OBS Greenscreen */
+            /* গ্রিনস্ক্রিন সরিয়ে ট্রান্সপারেন্ট করা হয়েছে */
+            background-color: transparent !important; 
             font-family: 'Teko', sans-serif;
             margin: 0;
             padding: 40px;
@@ -54,7 +54,6 @@
         }
 
         .team-row {
-            /* Firebase থেকে আসা গ্রেডিয়েন্ট কালার */
             background: linear-gradient(90deg, var(--list-bg-start) 0%, var(--list-bg-end) 50%, var(--list-bg-start) 100%);
             padding: 4px 20px;
             border: 2px solid var(--list-border);
@@ -136,7 +135,7 @@
     const db = firebase.database();
     const defaultLogo = "https://images.seeklogo.com/logo-png/35/1/free-fire-logo-png_seeklogo-354358.png";
 
-    // --- Firebase Theme Settings Listener ---
+    // Theme settings sync
     db.ref('theme_settings').on('value', (snapshot) => {
         const c = snapshot.val();
         if(c) {
