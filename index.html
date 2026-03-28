@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Registration</title>
+    <style>
+        /* 🎨 Dark Gaming UI */
+        body { font-family: 'Segoe UI', sans-serif; background: #0b0b0f; color: #ffffff; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: #15151e; padding: 30px; border-radius: 15px; border: 1px solid #fca311; width: 100%; max-width: 480px; box-shadow: 0 0 25px rgba(252, 163, 17, 0.15); position: relative; }
+        h1 { color: #fca311; text-align: center; text-transform: uppercase; margin: 0; font-size: 24px; letter-spacing: 1px; }
+        .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 20px; }
+        
+        /* 📱 Payment Box & Copy Button */
+        .payment-box { background: #1f1f2a; border-radius: 8px; padding: 15px; margin-bottom: 20px; border-left: 4px solid #fca311; }
+        .payment-box p { margin: 5px 0; font-size: 14px; color: #ddd; }
+        .method-row { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .number-box { display: flex; justify-content: space-between; align-items: center; background: #15151e; padding: 8px 12px; border-radius: 6px; border: 1px solid #333; }
+        .number-box span { font-weight: bold; color: #fca311; font-size: 15px; }
+        .copy-btn { background: #333; color: #fca311; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.3s; }
+        .copy-btn:hover { background: #fca311; color: #000; }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: #fca311; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #1f1f2a; color: white; font-size: 14px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus, select:focus { border-color: #fca311; box-shadow: 0 0 5px rgba(252, 163, 17, 0.3); }
+        
+        input[type="file"] { padding: 8px; font-size: 12px; cursor: pointer; }
+        input[type="file"]::file-selector-button { background: #fca311; color: #000; font-weight: bold; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-right: 10px; transition: 0.3s; }
+        input[type="file"]::file-selector-button:hover { background: #ffb732; }
+
+        .uid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        
+        .btn-submit { width: 100%; background: #fca311; color: #000; font-weight: bold; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; transition: 0.3s; margin-top: 10px; text-transform: uppercase; }
+        .btn-submit:hover { background: #ffb732; transform: translateY(-2px); }
+
+        /* 🔄 Loading Overlay */
+        #upload-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 11, 15, 0.9); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+        .spinner { border: 5px solid #333; border-top: 5px solid #fca311; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #offline-screen, #loading-screen, #success-screen { text-align: center; display: none; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="upload-overlay">
+        <div class="spinner"></div>
+        <h2 style="color: #fca311; margin: 0;">Uploading Data...</h2>
+        <p style="color: #ccc; font-size: 13px;">Please don't close this window.</p>
+    </div>
+
+    <div id="loading-screen" class="container" style="display: block;">
+        <h1>Connecting...</h1>
+        <p>Fetching tournament details.</p>
+    </div>
+
+    <div id="offline-screen" class="container">
+        <h1 style="color: #ff4d4d;">Registration Closed</h1>
+        <p>The tournament registration period has ended.</p>
+    </div>
+
+    <div id="success-screen" class="container">
+        <h1 style="color: #4df3ff;">✔ Registration Sent!</h1>
+        <p>আপনার তথ্য এবং স্ক্রিনশট পাঠানো হয়েছে। চেক করে আপনার সাথে যোগাযোগ করা হবে।</p>
+        <button class="btn-submit" onclick="location.reload()">Back to Home</button>
+    </div>
+
+    <div id="form-container" class="container hidden">
+        <h1 id="form_title">Loading...</h1>
+        <p class="subtitle">Tournament Registration Form</p>
+
+        <div class="payment-box">
+            <p style="font-weight: bold; color: #fff;">পেমেন্ট করার নিয়ম:</p>
+            <p>নিচের যেকোনো নাম্বারে <span style="color: #fca311; font-weight: bold;">৳<span id="fee_display">0</span></span> "Send Money" করুন। এরপর স্ক্রিনশট নিচে দিন।</p>
+            
+            <div class="method-row">
+                <div class="number-box">
+                    <span id="bkash_num">bKash: ...</span>
+                    <button type="button" class="copy-btn" onclick="copyNumber('bkash', this)">Copy</button>
+                </div>
+                <div class="number-box">
+                    <span id="nagad_num">Nagad: ...</span>
+                    <button type="button" class="copy-btn" onclick="copyNumber('nagad', this)">Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <form id="regForm">
+            <div class="input-group">
+                <label>Team Name:</label>
+                <input type="text" id="team_name" required placeholder="Name">
+            </div>
+
+            <div class="input-group">
+                <label>Team Logo (Max: 5MB):</label>
+                <input type="file" id="team_logo" accept="image/*" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Team Leader WhatsApp:</label>
+                <input type="tel" id="leader_wa" required placeholder="01XXXXXXXXX">
+            </div>
+
+            <label>Player UIDs:</label>
+            <div class="uid-grid">
+                <input type="number" id="uid1" required placeholder="Player 1 UID">
+                <input type="number" id="uid2" required placeholder="Player 2 UID">
+                <input type="number" id="uid3" required placeholder="Player 3 UID">
+                <input type="number" id="uid4" required placeholder="Player 4 UID">
+            </div>
+            <div class="input-group">
+                <input type="number" id="uid5" placeholder="Player 5 UID (Optional)">
+            </div>
+
+            <div style="border-top: 1px solid #333; margin: 15px 0; padding-top: 15px;">
+                <label style="color: # #fca3;">Payment Method:</label>
+                <div class="input-group">
+                    <select id="pay_method" required style="margin-bottom: 10px;">
+                        <option value="">Select Sent Method</option>
+                        <option value="bKash">bKash</option>
+                        <option value="Nagad">Nagad</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Payment Screenshot (Max: 5MB):</label>
+                    <input type="file" id="payment_ss" accept="image/*" required>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn-submit">Submit</button>
+        </form>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2mEZBoiuUuU3e0ymHyRiwHt_xfyBvuAs",
+            authDomain: "wisc-e94c6.firebaseapp.com",
+            databaseURL: "https://wisc-e94c6-default-rtdb.firebaseio.com",
+            projectId: "wisc-e94c6",
+            storageBucket: "wisc-e94c6.appspot.com",
+            messagingSenderId: "234617788899",
+            appId: "1:234617788899:web:f62321e71feddb5f38e8d6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1486558157592465459/3Dn_LyrmKO_-iuXqcu3B2SpzBxu9CIxZPbKfxMeS_Sjx8CQzhtFFRwcweYamkxY-sKCE"; 
+        
+        let rawBkash = "";
+        let rawNagad = "";
+
+        // 1. Load Data
+        window.onload = function() {
+            db.ref('tournament_settings').on('value', (snap) => {
+                const data = snap.val();
+                document.getElementById('loading-screen').style.display = 'none';
+
+                if (data && data.is_open) {
+                    document.getElementById('form_title').innerText = data.title || "Odyssey of Honor";
+                    document.getElementById('fee_display').innerText = data.fee || 0;
+                    
+                    rawBkash = data.bkash || "";
+                    rawNagad = data.nagad || "";
+                    
+                    document.getElementById('bkash_num').innerText = "bKash: " + (rawBkash || "Not Set");
+                    document.getElementById('nagad_num').innerText = "Nagad: " + (rawNagad || "Not Set");
+
+                    document.getElementById('form-container').classList.remove('hidden');
+                    document.getElementById('offline-screen').style.display = 'none';
+                } else {
+                    document.getElementById('offline-screen').style.display = 'block';
+                    document.getElementById('form-container').classList.add('hidden');
+                }
+            });
+        };
+
+        // 2. Copy Button Function
+        function copyNumber(type, btn) {
+            const numberToCopy = type === 'bkash' ? rawBkash : rawNagad;
+            if (numberToCopy) {
+                navigator.clipboard.writeText(numberToCopy);
+                const originalText = btn.innerText;
+                btn.innerText = "Copied!";
+                btn.style.background = "#fca311";
+                btn.style.color = "#000";
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = "#333";
+                    btn.style.color = "#fca311";
+                }, 2000);
+            }
+        }
+
+        // File Size Checker
+        function checkFileSize(fileInput) {
+            const file = fileInput.files[0];
+            return !(file && file.size > 5 * 1024 * 1024);
+        }
+
+        // 3. Handle Form Submission
+        document.getElementById('regForm').onsubmit = async function(e) {
+            e.preventDefault();
+
+            const logoInput = document.getElementById('team_logo');
+            const ssInput = document.getElementById('payment_ss');
+
+            if (!checkFileSize(logoInput) || !checkFileSize(ssInput)) {
+                alert("File size must be less than 5MB!");
+                return;
+            }
+
+            // Show Loading Overlay
+            document.getElementById('upload-overlay').style.display = 'flex';
+
+            const teamName = document.getElementById('team_name').value;
+            const waNum = document.getElementById('leader_wa').value;
+            const payMethod = document.getElementById('pay_method').value;
+            const uids = [
+                document.getElementById('uid1').value,
+                document.getElementById('uid2').value,
+                document.getElementById('uid3').value,
+                document.getElementById('uid4').value,
+                document.getElementById('uid5').value || null
+            ];
+
+            try {
+                await sendToDiscordWithImages(teamName, waNum, payMethod, uids, logoInput.files[0], ssInput.files[0]);
+                
+                // Hide Overlay and Show Success
+                document.getElementById('upload-overlay').style.display = 'none';
+                document.getElementById('form-container').classList.add('hidden');
+                document.getElementById('success-screen').style.display = 'block';
+            } catch (err) {
+                console.error(err);
+                document.getElementById('upload-overlay').style.display = 'none';
+                alert("Upload Failed! Please check your internet connection.");
+            }
+        };
+
+        // 4. Send Clean Data to Discord
+        async function sendToDiscordWithImages(team, wa, method, uids, logoFile, ssFile) {
+            const formData = new FormData();
+            formData.append('files[0]', logoFile, 'logo.png');
+            formData.append('files[1]', ssFile, 'screenshot.png');
+
+            // Format UID List nicely
+            let uidText = "";
+            uids.forEach((uid, index) => {
+                if (uid) uidText += `**Player ${index + 1}:** \`${uid}\`\n`;
+            });
+
+            const embed = {
+                title: "🏆 New Team Registration",
+                color: 5763719, // Clean Green Color
+                description: `**Team:** ${team}\n**WhatsApp:** ${wa}\n**Paid Via:** ${method}\n\n**🎮 UIDs:**\n${uidText}`,
+                thumbnail: { url: "attachment://logo.png" },
+                image: { url: "attachment://screenshot.png" },
+                footer: { text: "Odyssey of Honor • Verify Screenshot" },
+                timestamp: new Date().toISOString()
+            };
+
+            formData.append('payload_json', JSON.stringify({ embeds: [embed] }));
+
+            const response = await fetch(DISCORD_WEBHOOK, {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) throw new Error("Discord Upload Error");
+        }
+    </script>
+</body>
+</html>
