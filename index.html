@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Team Verification Panel</title>
+    <title>Admin - Control Panel</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -40,9 +40,9 @@
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 2px solid #fca311; padding-bottom: 10px; margin-bottom: 20px;
         }
-        .header-btns { display: flex; gap: 10px; align-items: center; }
-        .icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #fca311; padding: 5px;}
-        .logout-btn { background: #ff4d4d; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;}
+        .header-btns { display: flex; gap: 15px; align-items: center; }
+        .icon-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #fca311; padding: 5px; transition: 0.2s;}
+        .icon-btn:hover { transform: scale(1.1); }
 
         /* Team Cards & Modals */
         .team-card { background: #1e1e1e; display: flex; align-items: center; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #333; cursor: pointer;}
@@ -60,6 +60,11 @@
         #players-section { display: none; margin-bottom: 10px; transition: 0.3s; }
         .players-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .player-input { padding: 8px; border-radius: 4px; border: 1px solid #444; background: #2a2a2a; color: white; font-size: 12px; width: 100%; box-sizing: border-box; }
+
+        /* 🎨 Theme Styles */
+        .theme-item { display: flex; justify-content: space-between; align-items: center; background: #2a2a2a; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
+        .theme-item label { font-size: 13px; color: #ccc; }
+        .theme-item input { width: 40px; height: 25px; cursor: pointer; border: none; background: none; }
 
         .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
         .action-btns { display: flex; gap: 8px; }
@@ -90,9 +95,9 @@
     <div class="header">
         <h2 style="margin:0; font-size: 18px;">Dashboard</h2>
         <div class="header-btns">
-            <button class="icon-btn" onclick="window.open('scoreboard.html', '_blank')">📊</button>
-            <button class="icon-btn" onclick="openPointModal()">🎯</button>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+            <button class="icon-btn" title="Theme Settings" onclick="openThemeModal()">🎨</button>
+            <button class="icon-btn" title="View Scoreboard" onclick="window.open('scoreboard.html', '_blank')">📊</button>
+            <button class="icon-btn" title="Point Settings" onclick="openPointModal()">🎯</button>
         </div>
     </div>
     <div id="team-container"></div>
@@ -132,6 +137,27 @@
     </div>
 </div></div>
 
+<div id="themeModal" class="modal"><div class="modal-content">
+    <h3 style="text-align: center; color: #fca311; margin-top:0;">Theme Settings</h3>
+    
+    <div class="theme-item"><label>Header Background</label><input type="color" id="header_bg"></div>
+    <div class="theme-item"><label>Header Text</label><input type="color" id="header_text"></div>
+    <div class="theme-item"><label>List BG (Start)</label><input type="color" id="list_bg_start"></div>
+    <div class="theme-item"><label>List BG (End)</label><input type="color" id="list_bg_end"></div>
+    <div class="theme-item"><label>List Elements Text</label><input type="color" id="list_text"></div>
+    <div class="theme-item"><label>List Border Color</label><input type="color" id="list_border"></div>
+    <div class="theme-item"><label>Rank Color</label><input type="color" id="rank_color"></div>
+    <div class="theme-item"><label>Point Color</label><input type="color" id="point_color"></div>
+    <div class="theme-item"><label>Logo Border Color</label><input type="color" id="logo_border"></div>
+
+    <div class="btn-group" style="margin-top:15px;">
+        <div class="action-btns">
+            <button class="btn btn-cancel" onclick="closeModal('themeModal')">Cancel</button>
+            <button class="btn btn-save" onclick="saveThemeSettings()">Save Theme</button>
+        </div>
+    </div>
+</div></div>
+
 <div id="pointModal" class="modal"><div class="modal-content">
     <h3 style="text-align: center; color: #fca311; margin-top:0;">Point Settings</h3>
     <div id="points_config_container" class="players-grid"></div>
@@ -155,9 +181,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ==========================================
-    // 👁️ UI TOGGLE LOGIC
-    // ==========================================
     function togglePlayerSection() {
         const section = document.getElementById('players-section');
         const icon = document.getElementById('player-toggle-icon');
@@ -180,7 +203,6 @@
     }
 
     function checkLoginStatus() { if (localStorage.getItem('admin_logged_in') === 'true') { showApp(); } }
-    function logout() { localStorage.removeItem('admin_logged_in'); location.reload(); }
     function showApp() { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-container').style.display = 'block'; loadData(); }
 
     let pointsTable = {};
@@ -224,10 +246,8 @@
         if(!name) return alert("Enter Name");
 
         const players = {
-            p1: document.getElementById('p1').value,
-            p2: document.getElementById('p2').value,
-            p3: document.getElementById('p3').value,
-            p4: document.getElementById('p4').value,
+            p1: document.getElementById('p1').value, p2: document.getElementById('p2').value,
+            p3: document.getElementById('p3').value, p4: document.getElementById('p4').value,
             p5: document.getElementById('p5').value
         };
 
@@ -247,6 +267,37 @@
         }).then(() => closeModal('teamModal'));
     }
 
+    function openThemeModal() {
+        db.ref('theme_settings').once('value', (snapshot) => {
+            const c = snapshot.val() || {};
+            document.getElementById('header_bg').value = c.header_bg || "#fca311";
+            document.getElementById('header_text').value = c.header_text || "#111111";
+            document.getElementById('list_bg_start').value = c.list_bg_start || "#1f1d18";
+            document.getElementById('list_bg_end').value = c.list_bg_end || "#2a2822";
+            document.getElementById('list_text').value = c.list_text || "#ffffff";
+            document.getElementById('list_border').value = c.list_border || "#444444";
+            document.getElementById('rank_color').value = c.rank_color || "#fca311";
+            document.getElementById('point_color').value = c.point_color || "#fca311";
+            document.getElementById('logo_border').value = c.logo_border || "#fca311";
+            document.getElementById('themeModal').style.display = 'flex';
+        });
+    }
+
+    function saveThemeSettings() {
+        const theme = {
+            header_bg: document.getElementById('header_bg').value,
+            header_text: document.getElementById('header_text').value,
+            list_bg_start: document.getElementById('list_bg_start').value,
+            list_bg_end: document.getElementById('list_bg_end').value,
+            list_text: document.getElementById('list_text').value,
+            list_border: document.getElementById('list_border').value,
+            rank_color: document.getElementById('rank_color').value,
+            point_color: document.getElementById('point_color').value,
+            logo_border: document.getElementById('logo_border').value
+        };
+        db.ref('theme_settings').update(theme).then(() => closeModal('themeModal'));
+    }
+
     function openAddModal() {
         document.getElementById('edit_id').value = "";
         document.getElementById('team_name').value = "";
@@ -254,10 +305,8 @@
         document.getElementById('p1').value = ""; document.getElementById('p2').value = "";
         document.getElementById('p3').value = ""; document.getElementById('p4').value = "";
         document.getElementById('p5').value = "";
-        // Reset Player Section View
         document.getElementById('players-section').style.display = "none";
         document.getElementById('player-toggle-icon').innerText = "SHOW";
-
         currentMatches = []; renderMatches();
         document.getElementById('deleteBtn').style.display='none';
         document.getElementById('teamModal').style.display='flex';
@@ -273,11 +322,8 @@
         document.getElementById('p3').value = p.p3 || "";
         document.getElementById('p4').value = p.p4 || "";
         document.getElementById('p5').value = p.p5 || "";
-        
-        // Reset Player Section View
         document.getElementById('players-section').style.display = "none";
         document.getElementById('player-toggle-icon').innerText = "SHOW";
-
         currentMatches = data.matches ? [...data.matches] : [];
         renderMatches();
         document.getElementById('deleteBtn').style.display='block';
