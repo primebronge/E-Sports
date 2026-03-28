@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Admin Panel</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0b0b0f; color: #ffffff; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        
+        /* 🔒 Password Overlay Styles */
+        #password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0b0b0f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .pass-box {
+            background: #15151e;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #fca311;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(252, 163, 17, 0.2);
+            width: 90%;
+            max-width: 350px;
+        }
+
+        /* 🛠️ Admin Container Styles */
+        .admin-container { 
+            display: none; /* শুরুতে হাইড থাকবে */
+            background: #15151e; 
+            padding: 30px; 
+            border-radius: 15px; 
+            border: 1px solid #fca311; 
+            width: 100%; 
+            max-width: 400px; 
+            box-shadow: 0 0 25px rgba(252, 163, 17, 0.2); 
+        }
+        
+        h1 { color: #fca311; text-align: center; text-transform: uppercase; font-size: 20px; margin: 0 0 20px 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: #fca311; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
+        input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #1f1f2a; color: white; outline: none; box-sizing: border-box; }
+        
+        .status-box { display: flex; align-items: center; justify-content: space-between; background: #1f1f2a; padding: 12px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #333; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #fca311; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .btn-update, .btn-unlock { width: 100%; background: #fca311; color: #000; font-weight: bold; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; text-transform: uppercase; transition: 0.3s; }
+        .btn-update:hover, .btn-unlock:hover { background: #ffb732; transform: translateY(-2px); }
+        
+        #msg { text-align: center; margin-top: 15px; font-size: 14px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="password-overlay">
+        <div class="pass-box">
+            <h2 style="color: #fca311; margin-top: 0; font-size: 20px;">ADMIN ACCESS</h2>
+            <p style="font-size: 13px; color: #888; margin-bottom: 20px;">প্যানেল আনলক করতে পাসওয়ার্ড দিন</p>
+            <input type="password" id="admin-pass" placeholder="Enter Password" style="margin-bottom: 15px;">
+            <button class="btn-unlock" onclick="checkPassword()">Unlock Panel</button>
+        </div>
+    </div>
+
+    <div class="admin-container" id="admin-content">
+        <h1>Admin Control</h1>
+        
+        <form id="adminForm">
+            <div class="input-group">
+                <label>Tournament Title</label>
+                <input type="text" id="title" required placeholder="Enter Tournament Name">
+            </div>
+
+            <div class="input-group">
+                <label>Entry Fee (BDT)</label>
+                <input type="number" id="fee" required placeholder="Ex: 75">
+            </div>
+
+            <div class="input-group">
+                <label>bKash Number</label>
+                <input type="text" id="bkash" required placeholder="017XXXXXXXX">
+            </div>
+
+            <div class="input-group">
+                <label>Nagad Number</label>
+                <input type="text" id="nagad" required placeholder="018XXXXXXXX">
+            </div>
+
+            <div class="status-box">
+                <span style="font-size: 14px; font-weight: bold;">Registration Status</span>
+                <label class="switch">
+                    <input type="checkbox" id="is_open">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn-update" id="updateBtn">Update Settings</button>
+        </form>
+        
+        <p id="msg"></p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2mEZBoiuUuU3e0ymHyRiwHt_xfyBvuAs",
+            authDomain: "wisc-e94c6.firebaseapp.com",
+            databaseURL: "https://wisc-e94c6-default-rtdb.firebaseio.com",
+            projectId: "wisc-e94c6",
+            storageBucket: "wisc-e94c6.appspot.com",
+            messagingSenderId: "234617788899",
+            appId: "1:234617788899:web:f62321e71feddb5f38e8d6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 🔐 Check Password from Firebase
+        async function checkPassword() {
+            const passInput = document.getElementById('admin-pass').value;
+            const unlockBtn = document.querySelector('.btn-unlock');
+            
+            unlockBtn.disabled = true;
+            unlockBtn.innerText = "Verifying...";
+
+            try {
+                const snapshot = await db.ref('admin_settings/password').once('value');
+                const correctPass = snapshot.val();
+
+                if (passInput === correctPass) {
+                    document.getElementById('password-overlay').style.display = 'none';
+                    document.getElementById('admin-content').style.display = 'block';
+                    loadSettings(); // Load form data after successful login
+                } else {
+                    alert("ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("পাসওয়ার্ড কানেকশনে সমস্যা হচ্ছে।");
+            } finally {
+                unlockBtn.disabled = false;
+                unlockBtn.innerText = "Unlock Panel";
+            }
+        }
+
+        const form = document.getElementById('adminForm');
+        const msg = document.getElementById('msg');
+
+        // Load tournament settings from Firebase
+        function loadSettings() {
+            db.ref('tournament_settings').on('value', (snap) => {
+                const data = snap.val();
+                if (data) {
+                    document.getElementById('title').value = data.title || "";
+                    document.getElementById('fee').value = data.fee || 0;
+                    document.getElementById('bkash').value = data.bkash || "";
+                    document.getElementById('nagad').value = data.nagad || "";
+                    document.getElementById('is_open').checked = data.is_open || false;
+                }
+            });
+        }
+
+        // Update settings in Firebase
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('updateBtn');
+            btn.disabled = true;
+            btn.innerText = "Updating...";
+
+            const updatedData = {
+                title: document.getElementById('title').value,
+                fee: parseInt(document.getElementById('fee').value),
+                bkash: document.getElementById('bkash').value,
+                nagad: document.getElementById('nagad').value,
+                is_open: document.getElementById('is_open').checked
+            };
+
+            try {
+                await db.ref('tournament_settings').update(updatedData);
+                showMsg("Settings Updated Successfully!", "#00ff00");
+            } catch (err) {
+                showMsg("Update Failed!", "#ff4d4d");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Update Settings";
+            }
+        };
+
+        function showMsg(text, color) {
+            msg.innerText = text;
+            msg.style.color = color;
+            msg.style.display = "block";
+            setTimeout(() => { msg.style.display = "none"; }, 3000);
+        }
+    </script>
+</body>
+</html>
