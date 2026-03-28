@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Password Secured Panel</title>
+    <title>Admin - Team Verification Panel</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -44,18 +44,23 @@
         .icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #fca311; padding: 5px;}
         .logout-btn { background: #ff4d4d; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;}
 
-        /* Team Cards & Modals - Existing Responsive CSS */
+        /* Team Cards & Modals */
         .team-card { background: #1e1e1e; display: flex; align-items: center; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #333; cursor: pointer;}
         .team-card img { width: 40px; height: 40px; border-radius: 5px; margin-right: 12px; }
         .team-info h3 { margin: 0; font-size: 15px; }
         .team-info p { margin: 2px 0 0; font-size: 12px; color: #fca311; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: #1e1e1e; padding: 20px; border-radius: 12px; width: 92%; max-width: 400px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
+        .modal-content { background: #1e1e1e; padding: 20px; border-radius: 12px; width: 92%; max-width: 420px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
         
         .match-row { display: grid; grid-template-columns: 35px 1fr 1fr 35px; gap: 5px; margin-bottom: 8px; background: #2a2a2a; padding: 8px; border-radius: 5px; align-items: center; }
         .match-input { padding: 8px; border-radius: 4px; border: 1px solid #444; background: #111; color: white; width: 100%; text-align: center; box-sizing: border-box;}
         
+        /* 👥 Players Grid */
+        #players-section { display: none; margin-bottom: 10px; transition: 0.3s; }
+        .players-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .player-input { padding: 8px; border-radius: 4px; border: 1px solid #444; background: #2a2a2a; color: white; font-size: 12px; width: 100%; box-sizing: border-box; }
+
         .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
         .action-btns { display: flex; gap: 8px; }
         .btn { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 13px; }
@@ -65,10 +70,9 @@
 
         .fab { position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px; background: #fca311; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; color: black; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         
-        /* Points Config */
-        .points-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .point-item { display: flex; justify-content: space-between; align-items: center; background: #2a2a2a; padding: 8px; border-radius: 5px; }
-        .point-item input { width: 45px; background: #111; border: 1px solid #444; color: white; text-align: center; }
+        .section-label { font-size: 13px; color: #888; margin: 15px 0 8px; border-bottom: 1px solid #333; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .section-label:hover { color: #fca311; }
+        .toggle-status { font-size: 10px; background: #333; padding: 2px 6px; border-radius: 3px; color: #fca311; }
     </style>
 </head>
 <body>
@@ -91,7 +95,6 @@
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
-
     <div id="team-container"></div>
     <div class="fab" onclick="openAddModal()">+</div>
 </div>
@@ -99,13 +102,30 @@
 <div id="teamModal" class="modal"><div class="modal-content">
     <h3 id="modalTitle" style="text-align: center; color: #fca311; margin-top:0;">Edit Team</h3>
     <input type="hidden" id="edit_id">
+    
     <div style="margin-bottom:10px;"><label style="font-size:12px; color:#fca311;">Team Name</label><input type="text" id="team_name" class="match-input" style="text-align:left;"></div>
     <div style="margin-bottom:10px;"><label style="font-size:12px; color:#fca311;">Logo URL</label><input type="text" id="url" class="match-input" style="text-align:left;"></div>
-    <div style="display:flex; justify-content: space-between; align-items: center; margin: 15px 0 10px; border-bottom: 1px solid #333; padding-bottom:5px;">
-        <span style="font-size:13px; color:#888;">MATCHES</span>
-        <button onclick="addMatch()" style="background:#fca311; border:none; border-radius:3px; padding:3px 8px; font-size:11px; font-weight:bold;">+ ADD</button>
+
+    <div class="section-label" onclick="togglePlayerSection()">
+        <span>PLAYERS (VERIFICATION)</span>
+        <span id="player-toggle-icon" class="toggle-status">SHOW</span>
+    </div>
+    <div id="players-section">
+        <div class="players-grid">
+            <input type="text" id="p1" class="player-input" placeholder="Player 1">
+            <input type="text" id="p2" class="player-input" placeholder="Player 2">
+            <input type="text" id="p3" class="player-input" placeholder="Player 3">
+            <input type="text" id="p4" class="player-input" placeholder="Player 4">
+            <input type="text" id="p5" class="player-input" placeholder="Player 5">
+        </div>
+    </div>
+
+    <div class="section-label" style="cursor: default;">
+        <span>MATCHES</span>
+        <button onclick="addMatch()" style="background:#fca311; border:none; border-radius:3px; padding:3px 8px; font-size:11px; font-weight:bold; cursor:pointer;">+ ADD</button>
     </div>
     <div id="match_container"></div>
+    
     <div class="btn-group">
         <div class="action-btns"><button class="btn btn-cancel" onclick="closeModal('teamModal')">Close</button><button class="btn btn-save" onclick="saveTeamData()">Save</button></div>
         <button id="deleteBtn" class="btn btn-delete" onclick="deleteCurrentTeam()">REMOVE TEAM</button>
@@ -114,7 +134,7 @@
 
 <div id="pointModal" class="modal"><div class="modal-content">
     <h3 style="text-align: center; color: #fca311; margin-top:0;">Point Settings</h3>
-    <div class="points-grid" id="points_config_container"></div>
+    <div id="points_config_container" class="players-grid"></div>
     <div class="btn-group" style="margin-top:15px;"><div class="action-btns"><button class="btn btn-cancel" onclick="closeModal('pointModal')">Cancel</button><button class="btn btn-save" onclick="savePointSettings()">Save Points</button></div></div>
 </div></div>
 
@@ -136,50 +156,33 @@
     const db = firebase.database();
 
     // ==========================================
-    // 🔒 PASSWORD SECURITY LOGIC
+    // 👁️ UI TOGGLE LOGIC
     // ==========================================
-    function verifyPassword() {
-        const input = document.getElementById('admin_pass').value;
-        
-        db.ref('admin_settings/password').once('value', (snapshot) => {
-            let correctPass = snapshot.val();
-            
-            // First time setup: If no password in DB, set "1234" as default
-            if (!correctPass) {
-                db.ref('admin_settings/password').set("1234");
-                correctPass = "1234";
-                alert("Default Password set to: 1234. Change it from Firebase.");
-            }
-
-            if (input === correctPass) {
-                localStorage.setItem('admin_logged_in', 'true');
-                showApp();
-            } else {
-                alert("❌ Wrong Password!");
-            }
-        });
-    }
-
-    function checkLoginStatus() {
-        if (localStorage.getItem('admin_logged_in') === 'true') {
-            showApp();
+    function togglePlayerSection() {
+        const section = document.getElementById('players-section');
+        const icon = document.getElementById('player-toggle-icon');
+        if (section.style.display === "block") {
+            section.style.display = "none";
+            icon.innerText = "SHOW";
+        } else {
+            section.style.display = "block";
+            icon.innerText = "HIDE";
         }
     }
 
-    function logout() {
-        localStorage.removeItem('admin_logged_in');
-        location.reload();
+    function verifyPassword() {
+        const input = document.getElementById('admin_pass').value;
+        db.ref('admin_settings/password').once('value', (snapshot) => {
+            let correctPass = snapshot.val() || "1234";
+            if (input === correctPass) { localStorage.setItem('admin_logged_in', 'true'); showApp(); } 
+            else { alert("❌ Wrong Password!"); }
+        });
     }
 
-    function showApp() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-container').style.display = 'block';
-        loadData();
-    }
+    function checkLoginStatus() { if (localStorage.getItem('admin_logged_in') === 'true') { showApp(); } }
+    function logout() { localStorage.removeItem('admin_logged_in'); location.reload(); }
+    function showApp() { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-container').style.display = 'block'; loadData(); }
 
-    // ==========================================
-    // 🎮 DATA MANAGEMENT LOGIC
-    // ==========================================
     let pointsTable = {};
     let currentMatches = [];
 
@@ -200,7 +203,6 @@
         });
     }
 
-    // Modal & Save Functions (Optimized for Mobile)
     function renderMatches() {
         const con = document.getElementById('match_container');
         con.innerHTML = '';
@@ -221,6 +223,14 @@
         const name = document.getElementById('team_name').value;
         if(!name) return alert("Enter Name");
 
+        const players = {
+            p1: document.getElementById('p1').value,
+            p2: document.getElementById('p2').value,
+            p3: document.getElementById('p3').value,
+            p4: document.getElementById('p4').value,
+            p5: document.getElementById('p5').value
+        };
+
         let p=0, k=0, b=0;
         currentMatches.forEach(m => {
             let rank = parseInt(m.placement);
@@ -232,8 +242,46 @@
 
         db.ref('teams/'+id).update({
             team_name: name, url: document.getElementById('url').value,
-            matches: currentMatches, point: p, kill: k, booyah: b
+            matches: currentMatches, players: players,
+            point: p, kill: k, booyah: b
         }).then(() => closeModal('teamModal'));
+    }
+
+    function openAddModal() {
+        document.getElementById('edit_id').value = "";
+        document.getElementById('team_name').value = "";
+        document.getElementById('url').value = "";
+        document.getElementById('p1').value = ""; document.getElementById('p2').value = "";
+        document.getElementById('p3').value = ""; document.getElementById('p4').value = "";
+        document.getElementById('p5').value = "";
+        // Reset Player Section View
+        document.getElementById('players-section').style.display = "none";
+        document.getElementById('player-toggle-icon').innerText = "SHOW";
+
+        currentMatches = []; renderMatches();
+        document.getElementById('deleteBtn').style.display='none';
+        document.getElementById('teamModal').style.display='flex';
+    }
+
+    function openEditModal(id, data) {
+        document.getElementById('edit_id').value = id;
+        document.getElementById('team_name').value = data.team_name;
+        document.getElementById('url').value = data.url;
+        const p = data.players || {};
+        document.getElementById('p1').value = p.p1 || "";
+        document.getElementById('p2').value = p.p2 || "";
+        document.getElementById('p3').value = p.p3 || "";
+        document.getElementById('p4').value = p.p4 || "";
+        document.getElementById('p5').value = p.p5 || "";
+        
+        // Reset Player Section View
+        document.getElementById('players-section').style.display = "none";
+        document.getElementById('player-toggle-icon').innerText = "SHOW";
+
+        currentMatches = data.matches ? [...data.matches] : [];
+        renderMatches();
+        document.getElementById('deleteBtn').style.display='block';
+        document.getElementById('teamModal').style.display='flex';
     }
 
     function openPointModal() {
@@ -251,32 +299,12 @@
         db.ref('point_settings').set(pts).then(() => closeModal('pointModal'));
     }
 
-    function openAddModal() {
-        document.getElementById('edit_id').value = "";
-        document.getElementById('team_name').value = "";
-        document.getElementById('url').value = "";
-        currentMatches = []; renderMatches();
-        document.getElementById('deleteBtn').style.display='none';
-        document.getElementById('teamModal').style.display='flex';
-    }
-
-    function openEditModal(id, data) {
-        document.getElementById('edit_id').value = id;
-        document.getElementById('team_name').value = data.team_name;
-        document.getElementById('url').value = data.url;
-        currentMatches = data.matches ? [...data.matches] : [];
-        renderMatches();
-        document.getElementById('deleteBtn').style.display='block';
-        document.getElementById('teamModal').style.display='flex';
-    }
-
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function deleteCurrentTeam() {
         const id = document.getElementById('edit_id').value;
         if(confirm("Delete this team?")) db.ref('teams/'+id).remove().then(()=>closeModal('teamModal'));
     }
 
-    // Init
     checkLoginStatus();
 </script>
 </body>
