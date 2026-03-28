@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Control Center</title>
+    <style>
+        /* 🎨 Gaming Dashboard UI */
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0b0b0f;
+            color: #ffffff;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 900px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #fca311;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 32px;
+            margin-bottom: 40px;
+            text-shadow: 0 0 15px rgba(252, 163, 17, 0.4);
+        }
+
+        /* 🗂️ Grid Layout */
+        .grid-panel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        /* 🖱️ Interactive Buttons */
+        .nav-card {
+            background: #15151e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 40px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-card:hover {
+            border-color: #fca311;
+            background: #1f1f2a;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-card h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #fca311;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-card p {
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        /* ✨ Visual Accents */
+        .nav-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(252, 163, 17, 0.1), transparent);
+            transition: 0.5s;
+        }
+
+        .nav-card:hover::before {
+            left: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .grid-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <h1>admin Panel</h1>
+        
+        <div class="grid-panel">
+            
+            <a href="rpanel.html" class="nav-card">
+                <h2>Registration Panel</h2>
+                <p>Manage and Approve Teams</p>
+            </a>
+
+            <a href="spanel.html" class="nav-card">
+                <h2>team details</details></h2>
+                <p>Update Live Match Scores</p>
+            </a>
+
+            <a href="index.html" class="nav-card">
+                <h2>Form Link</h2>
+                <p>Public Registration Page</p>
+            </a>
+
+            <a href="scoreboard.html" class="nav-card">
+                <h2>Scoreboard</h2>
+                <p>Live View for Stream (OBS)</p>
+            </a>
+
+        </div>
+    </div>
+
+</body>
+</html>
