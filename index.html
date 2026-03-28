@@ -3,145 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Manage Teams & Theme</title>
+    <title>Admin - Password Secured Panel</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* 🔒 Login Screen Styles */
+        #login-screen {
+            display: flex; flex-direction: column; height: 100vh;
+            justify-content: center; align-items: center; background: #121212;
+        }
+        .login-box {
+            background: #1e1e1e; padding: 40px; border-radius: 15px; text-align: center;
+            border: 2px solid #fca311; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 85%; max-width: 320px;
+        }
+        .login-box h2 { margin-top: 0; color: #fca311; margin-bottom: 10px; font-size: 22px; }
+        .login-box p { color: #888; font-size: 13px; margin-bottom: 20px; }
+        
+        .pass-input {
+            width: 100%; padding: 12px; background: #2a2a2a; border: 1px solid #444;
+            border-radius: 5px; color: white; font-size: 16px; text-align: center;
+            margin-bottom: 15px; outline: none; box-sizing: border-box;
+        }
+        .pass-input:focus { border-color: #fca311; }
+        
+        .login-btn {
+            background: #fca311; color: black; font-weight: bold; padding: 12px;
+            border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%;
+            transition: 0.3s;
+        }
+        .login-btn:hover { background: #ffb732; }
+
+        /* 📱 Main App Styles */
+        #app-container { display: none; padding: 15px; max-width: 800px; margin: 0 auto; }
+        
         .header { 
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 2px solid #fca311; padding-bottom: 10px; margin-bottom: 20px; 
+            border-bottom: 2px solid #fca311; padding-bottom: 10px; margin-bottom: 20px;
         }
-        .header h2 { margin: 0; font-size: 20px; }
-        .header-btns { display: flex; gap: 15px; align-items: center; }
-        .icon-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #fca311; transition: 0.3s; }
-        .icon-btn:hover { transform: scale(1.1); opacity: 0.8; }
+        .header-btns { display: flex; gap: 10px; align-items: center; }
+        .icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #fca311; padding: 5px;}
+        .logout-btn { background: #ff4d4d; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;}
 
-        /* Team List Style */
-        .team-card {
-            background: #1e1e1e; display: flex; align-items: center;
-            padding: 12px; margin-bottom: 10px; border-radius: 10px;
-            cursor: pointer; transition: 0.3s; border: 1px solid #333;
-        }
-        .team-card:hover { border-color: #fca311; transform: translateY(-2px); }
-        .team-card img { width: 45px; height: 45px; border-radius: 5px; margin-right: 15px; object-fit: cover; }
-        .team-info { flex-grow: 1; }
-        .team-info h3 { margin: 0; font-size: 17px; }
-        .team-info p { margin: 3px 0 0; font-size: 13px; color: #fca311; font-weight: bold; }
+        /* Team Cards & Modals - Existing Responsive CSS */
+        .team-card { background: #1e1e1e; display: flex; align-items: center; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #333; cursor: pointer;}
+        .team-card img { width: 40px; height: 40px; border-radius: 5px; margin-right: 12px; }
+        .team-info h3 { margin: 0; font-size: 15px; }
+        .team-info p { margin: 2px 0 0; font-size: 12px; color: #fca311; }
 
-        /* Floating Button */
-        .fab {
-            position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
-            background: #fca311; border-radius: 50%; display: flex;
-            justify-content: center; align-items: center; font-size: 30px;
-            color: black; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
-        /* Modal Style */
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100;
-        }
-        .modal-content {
-            background: #222; padding: 20px; border-radius: 15px; width: 95%; max-width: 420px; 
-            border: 1px solid #444; max-height: 90vh; overflow-y: auto;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: #1e1e1e; padding: 20px; border-radius: 12px; width: 92%; max-width: 400px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
         
-        .input-row { display: flex; align-items: center; margin-bottom: 12px; }
-        .input-row label { width: 110px; font-size: 14px; color: #fca311; font-weight: bold; }
-        .input-row input { flex: 1; padding: 10px; background: #333; border: 1px solid #555; color: white; border-radius: 5px; outline: none; }
+        .match-row { display: grid; grid-template-columns: 35px 1fr 1fr 35px; gap: 5px; margin-bottom: 8px; background: #2a2a2a; padding: 8px; border-radius: 5px; align-items: center; }
+        .match-input { padding: 8px; border-radius: 4px; border: 1px solid #444; background: #111; color: white; width: 100%; text-align: center; box-sizing: border-box;}
         
-        /* Upload Wrapper */
-        .upload-container { flex: 1; display: flex; gap: 5px; }
-        .upload-btn { background: #333; border: 1px solid #555; color: #fca311; padding: 0 12px; border-radius: 5px; cursor: pointer; font-size: 18px; display: flex; align-items: center; }
-        .upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .section-title { font-size: 14px; color: #888; margin: 15px 0 10px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 5px; }
-
-        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        .action-btns { display: flex; gap: 10px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+        .action-btns { display: flex; gap: 8px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 13px; }
         .btn-save { background: #fca311; color: black; }
         .btn-cancel { background: #444; color: white; }
-        .btn-delete { background: #ff4d4d; color: white; margin-top: 5px; }
+        .btn-delete { background: #ff4d4d; color: white; }
 
-        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .setting-item { display: flex; flex-direction: column; gap: 5px; }
-        .setting-item label { font-size: 12px; color: #fca311; }
-        input[type="color"] { height: 40px; padding: 2px; cursor: pointer; border: none; width: 100%; background: none; }
+        .fab { position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px; background: #fca311; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; color: black; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        
+        /* Points Config */
+        .points-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .point-item { display: flex; justify-content: space-between; align-items: center; background: #2a2a2a; padding: 8px; border-radius: 5px; }
+        .point-item input { width: 45px; background: #111; border: 1px solid #444; color: white; text-align: center; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h2>Team Management</h2>
-    <div class="header-btns">
-        <button class="icon-btn" onclick="window.open('scoreboard.html', '_blank')" title="View Scoreboard">📊️</button>
-        <button class="icon-btn" onclick="openThemeModal()" title="Theme Settings">⚙️</button>
+<div id="login-screen">
+    <div class="login-box">
+        <h2>Admin Access</h2>
+        <p>Enter password to manage scoreboard</p>
+        <input type="password" id="admin_pass" class="pass-input" placeholder="••••••••">
+        <button class="login-btn" onclick="verifyPassword()">UNLOCK PANEL</button>
     </div>
 </div>
 
-<div id="team-container">
-    <p style="text-align: center; color: #666;">Loading Teams...</p>
-</div>
-
-<div id="teamModal" class="modal">
-    <div class="modal-content">
-        <h3 id="modalTitle" style="text-align: center; color: #fca311; margin: 0 0 15px 0;">Edit Team</h3>
-        <input type="hidden" id="edit_id">
-        <div class="input-row"><label>Name:</label><input type="text" id="team_name"></div>
-        
-        <div class="input-row">
-            <label>Logo URL:</label>
-            <div class="upload-container">
-                <input type="text" id="url" placeholder="Paste URL or upload">
-                <button class="upload-btn" id="upload_trigger" onclick="document.getElementById('file_input').click()" title="Upload Image">📁</button>
-                <input type="file" id="file_input" style="display: none;" accept="image/*" onchange="uploadToDiscord(this)">
-            </div>
-        </div>
-
-        <div class="input-row"><label>Booyah:</label><input type="number" id="booyah"></div>
-        <div class="input-row"><label>Kill:</label><input type="number" id="kill"></div>
-        <div class="input-row"><label>Point:</label><input type="number" id="point"></div>
-        <div class="btn-group">
-            <div class="action-btns">
-                <button class="btn btn-cancel" onclick="closeModal('teamModal')">Close</button>
-                <button class="btn btn-save" onclick="saveTeamData()">Confirm</button>
-            </div>
-            <button id="deleteBtn" class="btn btn-delete" onclick="deleteCurrentTeam()">REMOVE TEAM</button>
+<div id="app-container">
+    <div class="header">
+        <h2 style="margin:0; font-size: 18px;">Dashboard</h2>
+        <div class="header-btns">
+            <button class="icon-btn" onclick="window.open('scoreboard.html', '_blank')">📊</button>
+            <button class="icon-btn" onclick="openPointModal()">🎯</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
+
+    <div id="team-container"></div>
+    <div class="fab" onclick="openAddModal()">+</div>
 </div>
 
-<div id="themeModal" class="modal">
-    <div class="modal-content">
-        <h3 style="text-align: center; color: #fca311; margin: 0 0 15px 0;">Theme Settings</h3>
-        <div class="section-title">Header Settings</div>
-        <div class="settings-grid">
-            <div class="setting-item"><label>BG Color</label><input type="color" id="header_bg"></div>
-            <div class="setting-item"><label>Text Color</label><input type="color" id="header_text"></div>
-        </div>
-        <div class="section-title">List Row Background</div>
-        <div class="settings-grid">
-            <div class="setting-item"><label>Start/End</label><input type="color" id="list_bg_start"></div>
-            <div class="setting-item"><label>Middle</label><input type="color" id="list_bg_end"></div>
-        </div>
-        <div class="section-title">List Elements</div>
-        <div class="settings-grid">
-            <div class="setting-item"><label>Rank Color</label><input type="color" id="rank_color"></div>
-            <div class="setting-item"><label>Point Color</label><input type="color" id="point_color"></div>
-            <div class="setting-item"><label>Text Color</label><input type="color" id="list_text"></div>
-            <div class="setting-item"><label>Row Border</label><input type="color" id="list_border"></div>
-            <div class="setting-item"><label>Logo Border</label><input type="color" id="logo_border"></div>
-        </div>
-        <div class="btn-group">
-            <div class="action-btns">
-                <button class="btn btn-cancel" onclick="closeModal('themeModal')">Cancel</button>
-                <button class="btn btn-save" onclick="saveThemeData()">Save Theme</button>
-            </div>
-        </div>
+<div id="teamModal" class="modal"><div class="modal-content">
+    <h3 id="modalTitle" style="text-align: center; color: #fca311; margin-top:0;">Edit Team</h3>
+    <input type="hidden" id="edit_id">
+    <div style="margin-bottom:10px;"><label style="font-size:12px; color:#fca311;">Team Name</label><input type="text" id="team_name" class="match-input" style="text-align:left;"></div>
+    <div style="margin-bottom:10px;"><label style="font-size:12px; color:#fca311;">Logo URL</label><input type="text" id="url" class="match-input" style="text-align:left;"></div>
+    <div style="display:flex; justify-content: space-between; align-items: center; margin: 15px 0 10px; border-bottom: 1px solid #333; padding-bottom:5px;">
+        <span style="font-size:13px; color:#888;">MATCHES</span>
+        <button onclick="addMatch()" style="background:#fca311; border:none; border-radius:3px; padding:3px 8px; font-size:11px; font-weight:bold;">+ ADD</button>
     </div>
-</div>
+    <div id="match_container"></div>
+    <div class="btn-group">
+        <div class="action-btns"><button class="btn btn-cancel" onclick="closeModal('teamModal')">Close</button><button class="btn btn-save" onclick="saveTeamData()">Save</button></div>
+        <button id="deleteBtn" class="btn btn-delete" onclick="deleteCurrentTeam()">REMOVE TEAM</button>
+    </div>
+</div></div>
 
-<div class="fab" onclick="openAddModal()">+</div>
+<div id="pointModal" class="modal"><div class="modal-content">
+    <h3 style="text-align: center; color: #fca311; margin-top:0;">Point Settings</h3>
+    <div class="points-grid" id="points_config_container"></div>
+    <div class="btn-group" style="margin-top:15px;"><div class="action-btns"><button class="btn btn-cancel" onclick="closeModal('pointModal')">Cancel</button><button class="btn btn-save" onclick="savePointSettings()">Save Points</button></div></div>
+</div></div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -159,159 +134,150 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    
-    // --- Discord Webhook URL ---
-    // এখানে আপনার Discord Webhook URL টি বসান
-    const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1487139171977138297/p9eFome1HHAO0hgSH4uKlCgbRDL4gQjFJKCuHS-ZrEZTNA6CnktfHt1nDUkoUyfJKMm0"; 
 
-    const defaultLogo = "https://images.seeklogo.com/logo-png/35/1/free-fire-logo-png_seeklogo-354358.png";
-    const teamContainer = document.getElementById('team-container');
-
-    // Discord Upload Function
-    async function uploadToDiscord(input) {
-        const file = input.files[0];
-        if (!file) return;
-
-        if (DISCORD_WEBHOOK === "YOUR_DISCORD_WEBHOOK_URL_HERE") {
-            alert("Please set your Discord Webhook URL in the code!");
-            return;
-        }
-
-        const trigger = document.getElementById('upload_trigger');
-        const urlInput = document.getElementById('url');
+    // ==========================================
+    // 🔒 PASSWORD SECURITY LOGIC
+    // ==========================================
+    function verifyPassword() {
+        const input = document.getElementById('admin_pass').value;
         
-        trigger.innerText = "⏳"; // Loading Icon
-        trigger.disabled = true;
-
-        const formData = new FormData();
-        formData.append("file", file);
-
-        try {
-            const response = await fetch(DISCORD_WEBHOOK, {
-                method: "POST",
-                body: formData
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const uploadedUrl = data.attachments[0].url;
-                urlInput.value = uploadedUrl;
-                alert("Upload Successful!");
-            } else {
-                alert("Upload failed! Check your Webhook URL.");
+        db.ref('admin_settings/password').once('value', (snapshot) => {
+            let correctPass = snapshot.val();
+            
+            // First time setup: If no password in DB, set "1234" as default
+            if (!correctPass) {
+                db.ref('admin_settings/password').set("1234");
+                correctPass = "1234";
+                alert("Default Password set to: 1234. Change it from Firebase.");
             }
-        } catch (error) {
-            console.error(error);
-            alert("Error uploading image.");
-        } finally {
-            trigger.innerText = "📁";
-            trigger.disabled = false;
-            input.value = ""; // Clear file input
-        }
-    }
 
-    // --- Firebase Logic ---
-    db.ref('teams').on('value', (snapshot) => {
-        let teamsArr = [];
-        teamContainer.innerHTML = '';
-        snapshot.forEach((child) => { teamsArr.push({ id: child.key, ...child.val() }); });
-        teamsArr.sort((a, b) => b.point - a.point);
-        
-        if (teamsArr.length === 0) {
-            teamContainer.innerHTML = '<p style="text-align:center; color:#555;">No teams found.</p>';
-            return;
-        }
-
-        teamsArr.forEach((team) => {
-            const card = document.createElement('div');
-            card.className = 'team-card';
-            card.onclick = () => openEditModal(team.id, team);
-            card.innerHTML = `
-                <img src="${team.url || defaultLogo}" onerror="this.src='${defaultLogo}'" alt="logo">
-                <div class="team-info">
-                    <h3>${team.team_name}</h3>
-                    <p>Point: ${team.point} | Kill: ${team.kill} | Booyah: ${team.booyah}</p>
-                </div>
-            `;
-            teamContainer.appendChild(card);
-        });
-    });
-
-    function openThemeModal() {
-        db.ref('theme_settings').once('value', (snapshot) => {
-            const c = snapshot.val() || {};
-            document.getElementById('header_bg').value = c.header_bg || "#fca311";
-            document.getElementById('header_text').value = c.header_text || "#000000";
-            document.getElementById('list_bg_start').value = c.list_bg_start || "#1f1d18";
-            document.getElementById('list_bg_end').value = c.list_bg_end || "#2a2822";
-            document.getElementById('rank_color').value = c.rank_color || "#fca311";
-            document.getElementById('point_color').value = c.point_color || "#fca311";
-            document.getElementById('list_text').value = c.list_text || "#ffffff";
-            document.getElementById('list_border').value = c.list_border || "#444444";
-            document.getElementById('logo_border').value = c.logo_border || "#fca311";
-            document.getElementById('themeModal').style.display = 'flex';
+            if (input === correctPass) {
+                localStorage.setItem('admin_logged_in', 'true');
+                showApp();
+            } else {
+                alert("❌ Wrong Password!");
+            }
         });
     }
 
-    function saveThemeData() {
-        const theme = {
-            header_bg: document.getElementById('header_bg').value,
-            header_text: document.getElementById('header_text').value,
-            list_bg_start: document.getElementById('list_bg_start').value,
-            list_bg_end: document.getElementById('list_bg_end').value,
-            rank_color: document.getElementById('rank_color').value,
-            point_color: document.getElementById('point_color').value,
-            list_text: document.getElementById('list_text').value,
-            list_border: document.getElementById('list_border').value,
-            logo_border: document.getElementById('logo_border').value
-        };
-        db.ref('theme_settings').update(theme).then(() => closeModal('themeModal'));
+    function checkLoginStatus() {
+        if (localStorage.getItem('admin_logged_in') === 'true') {
+            showApp();
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('admin_logged_in');
+        location.reload();
+    }
+
+    function showApp() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-container').style.display = 'block';
+        loadData();
+    }
+
+    // ==========================================
+    // 🎮 DATA MANAGEMENT LOGIC
+    // ==========================================
+    let pointsTable = {};
+    let currentMatches = [];
+
+    function loadData() {
+        db.ref('point_settings').on('value', snap => { pointsTable = snap.val() || {}; });
+        db.ref('teams').on('value', snap => {
+            const container = document.getElementById('team-container');
+            container.innerHTML = '';
+            let teams = [];
+            snap.forEach(c => { teams.push({id: c.key, ...c.val()}); });
+            teams.sort((a,b) => b.point - a.point).forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'team-card';
+                div.onclick = () => openEditModal(t.id, t);
+                div.innerHTML = `<img src="${t.url||''}"><div class="team-info"><h3>${t.team_name}</h3><p>Points: ${t.point} | Kills: ${t.kill}</p></div>`;
+                container.appendChild(div);
+            });
+        });
+    }
+
+    // Modal & Save Functions (Optimized for Mobile)
+    function renderMatches() {
+        const con = document.getElementById('match_container');
+        con.innerHTML = '';
+        currentMatches.forEach((m, i) => {
+            con.innerHTML += `<div class="match-row">
+                <span style="font-size:12px; color:#fca311;">M${i+1}</span>
+                <input type="number" class="match-input" placeholder="Rank" value="${m.placement}" onchange="currentMatches[${i}].placement=this.value">
+                <input type="number" class="match-input" placeholder="Kills" value="${m.kill}" onchange="currentMatches[${i}].kill=this.value">
+                <button onclick="currentMatches.splice(${i},1);renderMatches()" style="background:none; border:none; color:#ff4d4d; font-weight:bold;">X</button>
+            </div>`;
+        });
+    }
+
+    function addMatch() { currentMatches.push({placement:"", kill:""}); renderMatches(); }
+
+    function saveTeamData() {
+        const id = document.getElementById('edit_id').value || "team_" + Date.now();
+        const name = document.getElementById('team_name').value;
+        if(!name) return alert("Enter Name");
+
+        let p=0, k=0, b=0;
+        currentMatches.forEach(m => {
+            let rank = parseInt(m.placement);
+            let kills = parseInt(m.kill) || 0;
+            if(rank >= 1 && rank <= 12) p += (pointsTable[rank] || 0);
+            if(rank === 1) b++;
+            p += kills; k += kills;
+        });
+
+        db.ref('teams/'+id).update({
+            team_name: name, url: document.getElementById('url').value,
+            matches: currentMatches, point: p, kill: k, booyah: b
+        }).then(() => closeModal('teamModal'));
+    }
+
+    function openPointModal() {
+        const con = document.getElementById('points_config_container');
+        con.innerHTML = '';
+        for(let i=1; i<=12; i++) {
+            con.innerHTML += `<div class="point-item"><label style="font-size:12px;">Rank ${i}</label><input type="number" id="pt_${i}" value="${pointsTable[i]||0}"></div>`;
+        }
+        document.getElementById('pointModal').style.display = 'flex';
+    }
+
+    function savePointSettings() {
+        let pts = {};
+        for(let i=1; i<=12; i++) { pts[i] = parseInt(document.getElementById('pt_'+i).value)||0; }
+        db.ref('point_settings').set(pts).then(() => closeModal('pointModal'));
     }
 
     function openAddModal() {
-        document.getElementById('modalTitle').innerText = "Add New Team";
         document.getElementById('edit_id').value = "";
         document.getElementById('team_name').value = "";
         document.getElementById('url').value = "";
-        document.getElementById('booyah').value = "0";
-        document.getElementById('kill').value = "0";
-        document.getElementById('point').value = "0";
-        document.getElementById('deleteBtn').style.display = "none";
-        document.getElementById('teamModal').style.display = 'flex';
+        currentMatches = []; renderMatches();
+        document.getElementById('deleteBtn').style.display='none';
+        document.getElementById('teamModal').style.display='flex';
     }
 
     function openEditModal(id, data) {
-        document.getElementById('modalTitle').innerText = "Edit Team Info";
         document.getElementById('edit_id').value = id;
         document.getElementById('team_name').value = data.team_name;
         document.getElementById('url').value = data.url;
-        document.getElementById('booyah').value = data.booyah;
-        document.getElementById('kill').value = data.kill;
-        document.getElementById('point').value = data.point;
-        document.getElementById('deleteBtn').style.display = "block";
-        document.getElementById('teamModal').style.display = 'flex';
-    }
-
-    function saveTeamData() {
-        let id = document.getElementById('edit_id').value || "team_" + Date.now();
-        const updateData = {
-            team_name: document.getElementById('team_name').value,
-            url: document.getElementById('url').value,
-            booyah: parseInt(document.getElementById('booyah').value) || 0,
-            kill: parseInt(document.getElementById('kill').value) || 0,
-            point: parseInt(document.getElementById('point').value) || 0
-        };
-        if(!updateData.team_name) return alert("Enter team name");
-        db.ref('teams/' + id).update(updateData).then(() => closeModal('teamModal'));
-    }
-
-    function deleteCurrentTeam() {
-        const id = document.getElementById('edit_id').value;
-        if(id && confirm("Are you sure?")) db.ref('teams/' + id).remove().then(() => closeModal('teamModal'));
+        currentMatches = data.matches ? [...data.matches] : [];
+        renderMatches();
+        document.getElementById('deleteBtn').style.display='block';
+        document.getElementById('teamModal').style.display='flex';
     }
 
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-</script>
+    function deleteCurrentTeam() {
+        const id = document.getElementById('edit_id').value;
+        if(confirm("Delete this team?")) db.ref('teams/'+id).remove().then(()=>closeModal('teamModal'));
+    }
 
+    // Init
+    checkLoginStatus();
+</script>
 </body>
 </html>
