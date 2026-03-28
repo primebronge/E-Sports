@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Sports Table - Transparent Theme</title>
+    <title>E-Sports Table - PP Linked to Text Color</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&display=swap');
 
@@ -20,7 +20,6 @@
         }
 
         body {
-            /* গ্রিনস্ক্রিন সরিয়ে ট্রান্সপারেন্ট করা হয়েছে */
             background-color: transparent !important; 
             font-family: 'Teko', sans-serif;
             margin: 0;
@@ -30,13 +29,13 @@
         }
 
         .scoreboard-container {
-            width: 1000px;
+            width: 1050px;
             margin: 0 auto;
         }
 
         .row {
             display: grid;
-            grid-template-columns: 0.8fr 4fr 1fr 1fr 1fr;
+            grid-template-columns: 0.8fr 3.5fr 1fr 0.8fr 1fr 1fr;
             align-items: center;
             text-align: center;
             font-size: 35px;
@@ -86,6 +85,13 @@
             transition: 0.5s;
         }
 
+        /* 🎯 PP কালার এখন List Text Color এর সাথে কানেক্টেড */
+        .pp-value {
+            color: var(--list-text); 
+            font-weight: 700;
+            transition: 0.5s;
+        }
+
         .point {
             color: var(--point-color);
             font-weight: 700;
@@ -110,6 +116,7 @@
         <div>RANK</div>
         <div class="header-name">TEAMS</div> 
         <div>BOOYAH</div>
+        <div>PP</div>
         <div>KILL</div>
         <div>POINT</div>
     </div>
@@ -158,11 +165,18 @@
         let teams = [];
         snapshot.forEach((childSnapshot) => {
             let data = childSnapshot.val();
+            
+            let lastMatchPos = "-";
+            if (data.matches && Array.isArray(data.matches) && data.matches.length > 0) {
+                lastMatchPos = data.matches[data.matches.length - 1].placement || "-";
+            }
+
             teams.push({
                 team_name: data.team_name || "Unknown",
                 booyah: data.booyah || 0,
                 kill: data.kill || 0,
                 point: data.point || 0,
+                pp: lastMatchPos,
                 url: data.url || defaultLogo
             });
         });
@@ -181,6 +195,7 @@
                     <span class="team-name-text">${team.team_name}</span>
                 </div>
                 <div>${team.booyah}</div>
+                <div class="pp-value">${team.pp}</div>
                 <div>${team.kill}</div>
                 <div class="point">${team.point}</div>
             `;
